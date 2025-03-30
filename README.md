@@ -73,3 +73,21 @@
 | course_id    | UUID   | REFERENCES t_course(id)              |
 | period_start | DATE   |                                      |
 | period_end   | DATE   |                                      |
+
+
+Тип obligation_type, используется в таблице t_student_to_course для определения обязательности курса для студента.
+
+
+| Value      | Description                           |
+|------------|---------------------------------------|
+| mandatory  | Обязательный курс                     |
+| elective   | Факультативный курс                   |
+| auditing   | Курс, который студент посещает как слушатель, без обязательств |
+
+Тип lecturer_degree_type, используется в таблице t_lecturer для определения академической степени преподавателя.
+
+| Value              | Description                            |
+|--------------------|----------------------------------------|
+| assistant          | Ассистент (начальная должность)        |
+| associate_professor| Доцент                                 |
+| professor          | Профессор                              |
