@@ -8,86 +8,106 @@
 
 ![Логическая модель](docs/logical-model.jpg "Логическая модель")
 
-Физическая модель:
+## Физическая модель
 
-Таблица t_faculty, содержащая информацию о факультетах.
+### Таблица t_faculty
 
-| Column    | Type   | Constraints |
-|-----------|--------|-------------|
-| id        | UUID   | PRIMARY KEY |
-| name      | TEXT   | NOT NULL    |
-| director  | TEXT   |             |
+| Column   | Type | Constraints                                                                                     |
+|----------|------|------------------------------------------------------------------------------------------------|
+| id       | UUID | PRIMARY KEY, DEFAULT uuid_generate_v4()                                                        |
+| name     | TEXT | NOT NULL, строка не может быть пустой или состоять из пробелов                                 |
+| director | TEXT |                                                                                                |
 
-Таблица t_student, со списком студентов, связывающая их через faculty_id к соответствующему факультету.
+---
 
-| Column      | Type   | Constraints                         |
-|-------------|--------|-------------------------------------|
-| id          | UUID   | PRIMARY KEY                         |
-| faculty_id  | UUID   | REFERENCES t_faculty(id)            |
-| first_name  | TEXT   | NOT NULL                            |
-| second_name | TEXT   | NOT NULL                            |
-| year        | INTEGER|                                     |
+### Таблица t_student
 
-Таблица t_department, отражающая департаменты, связанные с факультетом через faculty_id.
+| Column      | Type   | Constraints                                                                                                          |
+|-------------|--------|----------------------------------------------------------------------------------------------------------------------|
+| id          | UUID   | PRIMARY KEY, DEFAULT uuid_generate_v4()                                                                              |
+| faculty_id  | UUID   | REFERENCES t_faculty(id)                                                                                             |
+| first_name  | TEXT   | NOT NULL, строка не может быть пустой или состоять из пробелов                                                       |
+| second_name | TEXT   | NOT NULL, строка не может быть пустой или состоять из пробелов                                                       |
+| year        | INTEGER| Неотрицательное число (**>= 0**) или NULL                                                                            |
 
-| Column      | Type   | Constraints                         |
-|-------------|--------|-------------------------------------|
-| id          | UUID   | PRIMARY KEY                         |
-| faculty_id  | UUID   | REFERENCES t_faculty(id)            |
-| name        | TEXT   | NOT NULL                            |
-| head        | TEXT   |                                     |
+---
 
-Таблица t_course, с данными о курсах, связанных с департаментом через department_id.
+### Таблица t_department
 
-| Column       | Type   | Constraints                         |
-|--------------|--------|-------------------------------------|
-| id           | UUID   | PRIMARY KEY                         |
-| department_id| UUID   | REFERENCES t_department(id)         |
-| name         | TEXT   | NOT NULL                            |
-| year         | INTEGER| NOT NULL                            |
+| Column      | Type   | Constraints                                                                                   |
+|-------------|--------|----------------------------------------------------------------------------------------------|
+| id          | UUID   | PRIMARY KEY, DEFAULT uuid_generate_v4()                                                      |
+| faculty_id  | UUID   | REFERENCES t_faculty(id)                                                                     |
+| name        | TEXT   | NOT NULL, строка не может быть пустой или состоять из пробелов                               |
+| head        | TEXT   |                                                                                              |
 
-Связующая таблица t_student_to_course, между студентами и курсами, включает тип обязательности курса (obligation).
+---
 
-| Column      | Type           | Constraints                         |
-|-------------|----------------|-------------------------------------|
-| id          | UUID           | PRIMARY KEY                         |
-| student_id  | UUID           | REFERENCES t_student(id)            |
-| course_id   | UUID           | REFERENCES t_course(id)             |
-| obligation  | obligation_type| NOT NULL                            |
+### Таблица t_course
 
-Таблица t_lecturer, содержащая информацию о преподавателях и их степени.
+| Column        | Type      | Constraints                                                                            |
+|---------------|-----------|----------------------------------------------------------------------------------------|
+| id            | UUID      | PRIMARY KEY, DEFAULT uuid_generate_v4()                                                |
+| department_id | UUID      | REFERENCES t_department(id)                                                            |
+| name          | TEXT      | NOT NULL, строка не может быть пустой или состоять из пробелов                         |
+| year          | INTEGER   | NOT NULL, неотрицательное число (**>= 0**)                                             |
 
-| Column      | Type                | Constraints    |
-|-------------|---------------------|----------------|
-| id          | UUID                | PRIMARY KEY    |
-| first_name  | TEXT                | NOT NULL       |
-| second_name | TEXT                | NOT NULL       |
-| degree      | lecturer_degree_type| NOT NULL       |
+---
 
-Связующая таблица t_course_lecturer, между курсами и преподавателями, с указанием периода преподавания.
+### Таблица t_student_to_course
 
-| Column       | Type   | Constraints                          |
-|--------------|--------|--------------------------------------|
-| id           | UUID   | PRIMARY KEY                          |
-| lecturer_id  | UUID   | REFERENCES t_lecturer(id)            |
-| course_id    | UUID   | REFERENCES t_course(id)              |
-| period_start | DATE   |                                      |
-| period_end   | DATE   |                                      |
+| Column      | Type           | Constraints                                    |
+|-------------|----------------|------------------------------------------------|
+| id          | UUID           | PRIMARY KEY, DEFAULT uuid_generate_v4()        |
+| student_id  | UUID           | REFERENCES t_student(id)                       |
+| course_id   | UUID           | REFERENCES t_course(id)                        |
+| obligation  | obligation_type| NOT NULL                                       |
 
+---
 
-Тип obligation_type, используется в таблице t_student_to_course для определения обязательности курса для студента.
+### Таблица t_lecturer
 
+| Column      | Type                | Constraints                                                                        |
+|-------------|---------------------|-------------------------------------------------------------------------------------|
+| id          | UUID                | PRIMARY KEY, DEFAULT uuid_generate_v4()                                             |
+| first_name  | TEXT                | NOT NULL, строка не может быть пустой или состоять из пробелов                      |
+| second_name | TEXT                | NOT NULL, строка не может быть пустой или состоять из пробелов                      |
+| degree      | lecturer_degree_type| NOT NULL                                                                            |
 
-| Value      | Description                           |
-|------------|---------------------------------------|
-| mandatory  | Обязательный курс                     |
-| elective   | Факультативный курс                   |
-| auditing   | Курс, который студент посещает как слушатель, без обязательств |
+---
 
-Тип lecturer_degree_type, используется в таблице t_lecturer для определения академической степени преподавателя.
+### Таблица t_course_lecturer
 
-| Value              | Description                            |
-|--------------------|----------------------------------------|
-| assistant          | Ассистент (начальная должность)        |
-| associate_professor| Доцент                                 |
-| professor          | Профессор                              |
+| Column       | Type   | Constraints                                                                                                                      |
+|--------------|--------|---------------------------------------------------------------------------------------------------------------------------------|
+| id           | UUID   | PRIMARY KEY, DEFAULT uuid_generate_v4()                                                                                        |
+| lecturer_id  | UUID   | REFERENCES t_lecturer(id)                                                                                                       |
+| course_id    | UUID   | REFERENCES t_course(id)                                                                                                         |
+| period_start | DATE   | См. ниже                                                                                                                        |
+| period_end   | DATE   | **Периоды (period_start, period_end) должны быть валидными: period_start <= period_end; для каждого курса и лектора периоды не могут пересекаться** (см. триггер) |
+
+- **Триггер предотвращает пересечение периодов для одной и той же пары (lecturer_id, course_id).**
+
+---
+
+### Тип obligation_type
+
+Используется в таблице t_student_to_course для определения обязательности курса для студента.
+
+| Value      | Описание                                                 |
+|------------|---------------------------------------------------------|
+| mandatory  | Обязательный курс                                       |
+| elective   | Факультативный курс                                     |
+| auditing   | Курс посещается только как слушатель, без обязательств  |
+
+---
+
+### Тип lecturer_degree_type
+
+Используется в таблице t_lecturer для определения академической степени преподавателя.
+
+| Value              | Описание                       |
+|--------------------|-------------------------------|
+| assistant          | Ассистент                     |
+| associate_professor| Доцент                        |
+| professor          | Профессор                     |
